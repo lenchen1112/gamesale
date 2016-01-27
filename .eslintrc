@@ -1,0 +1,9 @@
+{
+  "extends": "rackt",
+  "parser": "babel-eslint",
+  "rules": {
+  },
+  "plugins": [
+    "react"
+  ]
+}
