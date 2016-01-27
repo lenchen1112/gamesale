@@ -28,8 +28,8 @@ const parsePage = (pageUrl) => {
           url: $(elem).find('a').attr('href')
         },{
           title: $(elem).text().trim()
-        }, () => {});
-      });
+        }, () => {})
+      })
     })
 }
 
