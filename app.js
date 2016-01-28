@@ -1,39 +1,34 @@
 import request from 'superagent'
 import cheerio from 'cheerio'
-import mongoose, { Schema } from 'mongoose'
-import findOrCreate from 'mongoose-findorcreate'
-
-
-// set up MongoDB
-mongoose.connect('mongodb://localhost/gamesale')
-const SaleEntrySchema = new Schema({
-  url: String,
-  title: String
-})
-SaleEntrySchema.plugin(findOrCreate)
-const SaleEntry = mongoose.model('SaleEntry', SaleEntrySchema)
-
+import notifier from 'node-notifier'
 
 // fetch pages
 const GAMESALE_INDEX_PAGE = 'https://www.ptt.cc/bbs/Gamesale/index.html'
+const KEY_PATTERN = /PS4.*售.*巫師3/
 
-const parsePage = (pageUrl) => {
+const containsKeyword = (title, pattern) => {
+  return pattern.test(title)
+}
+
+const findEntryWithPattern = (pageUrl, keyPattern) => {
   request
     .get(pageUrl)
     .end((err, res) => {
       const $ = cheerio.load(res.text)
 
-      $('.r-ent .title').each((i, elem) => {
-        SaleEntry.findOrCreate({
-          url: $(elem).find('a').attr('href')
-        },{
-          title: $(elem).text().trim()
-        }, () => {})
+      cheerio.load(res.text)('.r-ent .title').each((i, elem) => {
+        const entryTitle = $(elem).text().trim()
+        const entryUrl = 'https://www.ptt.cc' + $(elem).find('a').attr('href')
+
+        if (containsKeyword(entryTitle, keyPattern)) {
+          notifier.notify({
+            title: '有人要賣 巫師3 啦',
+            message: entryTitle,
+            open: entryUrl
+          })
+        }
       })
     })
 }
 
-parsePage(GAMESALE_INDEX_PAGE)
-
-// tear down MongoDB
-mongoose.disconnect()
+findEntryWithPattern(GAMESALE_INDEX_PAGE, KEY_PATTERN)
