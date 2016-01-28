@@ -3,6 +3,11 @@ import cheerio from 'cheerio'
 import notifier from 'node-notifier'
 import Rx from 'rx'
 import Promise from 'bluebird'
+import { Spinner } from 'cli-spinner'
+
+const spinner = new Spinner('processing.. %s')
+spinner.setSpinnerString('|/-\\')
+spinner.start()
 
 // fetch pages
 const GAMESALE_INDEX_PAGE = 'https://www.ptt.cc/bbs/Gamesale/index.html'
@@ -10,6 +15,7 @@ const KEY_PATTERN = /PS4.*售.*巫師/
 const FETCH_PEROID = 20 * 1000
 
 const notify = (entry) => {
+  console.log('')
   console.log(entry)
   console.log(new Date())
   console.log('')

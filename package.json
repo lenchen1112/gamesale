@@ -2,7 +2,7 @@
   "name": "gamesale",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "start.js",
   "scripts": {
     "lint": "eslint .",
     "start": "node start.js"
@@ -13,6 +13,7 @@
   "dependencies": {
     "bluebird": "^3.1.5",
     "cheerio": "^0.19.0",
+    "cli-spinner": "^0.2.2",
     "node-notifier": "^4.4.0",
     "superagent": "^1.7.2"
   },
