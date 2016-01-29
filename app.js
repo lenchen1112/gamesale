@@ -11,8 +11,8 @@ spinner.start()
 
 // fetch pages
 const GAMESALE_INDEX_PAGE = 'https://www.ptt.cc/bbs/Gamesale/index.html'
-const KEY_PATTERN = /PS4.*售.*(人中之龍|人龍).*0/i
-const FETCH_PEROID = 20 * 1000
+const KEY_PATTERN = /PS4.*售/i
+const FETCH_PERIOD = 20 * 1000
 
 const sendNotification = (entry) => {
   console.log('')
@@ -57,7 +57,7 @@ const findEntryWithPatternAsync = (pageUrl, keyPattern) => {
 }
 
 Rx.Observable
-  .timer(0, FETCH_PEROID)
+  .timer(0, FETCH_PERIOD)
   .flatMap(findEntryWithPatternAsync(GAMESALE_INDEX_PAGE, KEY_PATTERN))
   .flatMap(Rx.Observable.fromArray)
   .distinct()
