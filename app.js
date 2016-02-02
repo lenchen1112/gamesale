@@ -17,7 +17,38 @@ const PATTERNS = [
 ]
 const FETCH_PERIOD = 20 * 1000
 
-const sendNotification = (entry) => {
+
+const fetchEntries = pageUrl => {
+  return new Promise((resolve, reject) => {
+    request
+      .get(pageUrl)
+      .end((err, res) => {
+        if (err) {
+          reject(err)
+        }
+
+        const $ = cheerio.load(res.text)
+        const entries = $('.r-ent .title').map((i, elem) => {
+          const title = $(elem).text().trim()
+          const url = 'https://www.ptt.cc' + $(elem).find('a').attr('href')
+
+          return {
+            title,
+            url
+          }
+        })
+
+        resolve(entries)
+      })
+  })
+}
+
+const filterWithPatterns = patterns => entry => {
+  return patterns.map(pattern => pattern.test(entry.title))
+                 .reduce((a, b) => a || b, false)
+}
+
+const sendNotification = entry => {
   console.log('')
   console.log(entry)
   console.log(new Date())
@@ -30,39 +61,10 @@ const sendNotification = (entry) => {
   })
 }
 
-const findEntryWithPatternAsync = (pageUrl, patterns) => {
-  return new Promise((resolve, reject) => {
-    request
-      .get(pageUrl)
-      .end((err, res) => {
-        if (err) {
-          reject(err)
-        }
-
-        const $ = cheerio.load(res.text)
-        let entries = []
-
-        cheerio.load(res.text)('.r-ent .title').each((i, elem) => {
-          const entryTitle = $(elem).text().trim()
-          const entryUrl = 'https://www.ptt.cc' + $(elem).find('a').attr('href')
-          const patternMatched = patterns.map(pattern => pattern.test(entryTitle))
-                                         .reduce((a, b) => a || b, false)
-          if (patternMatched) {
-            entries.push({
-              title: entryTitle,
-              url: entryUrl
-            })
-          }
-        })
-
-        resolve(entries)
-      })
-  })
-}
-
 Rx.Observable
   .timer(0, FETCH_PERIOD)
-  .flatMap(findEntryWithPatternAsync(GAMESALE_INDEX_PAGE, PATTERNS))
+  .flatMap(fetchEntries(GAMESALE_INDEX_PAGE))
   .flatMap(Rx.Observable.fromArray)
+  .filter(filterWithPatterns(PATTERNS))
   .distinct()
   .subscribe(sendNotification)
