@@ -4,10 +4,13 @@ import notifier from 'node-notifier'
 import Rx from 'rx'
 import Promise from 'bluebird'
 import { Spinner } from 'cli-spinner'
+import Debug from 'debug'
 
 const spinner = new Spinner('processing.. %s')
 spinner.setSpinnerString('|/-\\')
 spinner.start()
+
+const debug = new Debug('gamesale')
 
 // fetch pages
 const GAMESALE_INDEX_PAGE = 'https://www.ptt.cc/bbs/Gamesale/index.html'
@@ -49,10 +52,9 @@ const filterWithPatterns = patterns => entry => {
 }
 
 const sendNotification = entry => {
-  console.log('')
-  console.log(entry)
-  console.log(new Date())
-  console.log('')
+  debug('')
+  debug(entry)
+  debug(new Date())
 
   notifier.notify({
     title: '徵到啦',
