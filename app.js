@@ -11,7 +11,10 @@ spinner.start()
 
 // fetch pages
 const GAMESALE_INDEX_PAGE = 'https://www.ptt.cc/bbs/Gamesale/index.html'
-const KEY_PATTERN = /PS4.*售/i
+const PATTERNS = [
+  /PS4.*售.*(人中之龍|人龍).*(0|零)/i,
+  /PSV.*售.*魔龍/i
+]
 const FETCH_PERIOD = 20 * 1000
 
 const sendNotification = (entry) => {
@@ -27,7 +30,7 @@ const sendNotification = (entry) => {
   })
 }
 
-const findEntryWithPatternAsync = (pageUrl, keyPattern) => {
+const findEntryWithPatternAsync = (pageUrl, patterns) => {
   return new Promise((resolve, reject) => {
     request
       .get(pageUrl)
@@ -42,8 +45,9 @@ const findEntryWithPatternAsync = (pageUrl, keyPattern) => {
         cheerio.load(res.text)('.r-ent .title').each((i, elem) => {
           const entryTitle = $(elem).text().trim()
           const entryUrl = 'https://www.ptt.cc' + $(elem).find('a').attr('href')
-
-          if (keyPattern.test(entryTitle)) {
+          const patternMatched = patterns.map(pattern => pattern.test(entryTitle))
+                                         .reduce((a, b) => a || b, false)
+          if (patternMatched) {
             entries.push({
               title: entryTitle,
               url: entryUrl
@@ -58,7 +62,7 @@ const findEntryWithPatternAsync = (pageUrl, keyPattern) => {
 
 Rx.Observable
   .timer(0, FETCH_PERIOD)
-  .flatMap(findEntryWithPatternAsync(GAMESALE_INDEX_PAGE, KEY_PATTERN))
+  .flatMap(findEntryWithPatternAsync(GAMESALE_INDEX_PAGE, PATTERNS))
   .flatMap(Rx.Observable.fromArray)
   .distinct()
   .subscribe(sendNotification)
