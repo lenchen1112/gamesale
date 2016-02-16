@@ -1,5 +1,5 @@
 {
-  "extends": "rackt",
+  "extends": "reactjs",
   "parser": "babel-eslint",
   "rules": {
   },
